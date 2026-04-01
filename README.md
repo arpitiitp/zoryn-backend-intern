@@ -32,14 +32,20 @@ To showcase real-world engineering rather than generic template generation, this
    npm install
    ```
 
-2. **Initialize SQLite Tables & Seed Master Admin**
+2. **Environment Configuration**
+   Copy the example environment variables and edit them if needed:
+   ```bash
+   cp backend/.env.example backend/.env
+   ```
+
+3. **Initialize SQLite Tables & Seed Master Admin**
    ```bash
    node src/db/init.js
    node src/db/seed.js
    ```
-   *The seed script creates the master `admin@finance.local` account. Open registration APIs are removed entirely from the system as a real internal finance tool would lock identity creation to admin dashboards or Identity Providers.*
+   *The seed script reads from the `.env` variables (`ADMIN_EMAIL` and `ADMIN_PASSWORD`) to create the master administrator. Open registration APIs are removed entirely from the system as a real internal finance tool would lock identity creation to admin dashboards or Identity Providers.*
 
-3. **Boot Server**
+4. **Boot Server**
    ```bash
    npm start
    # or npm run dev

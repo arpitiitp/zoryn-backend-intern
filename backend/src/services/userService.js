@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const userRepository = require('../repositories/userRepository');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'supersecretassignmentkey';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 class UserService {
     async login(email, password) {
@@ -24,6 +24,10 @@ class UserService {
             const err = new Error('Invalid email or password');
             err.statusCode = 401;
             throw err;
+        }
+
+        if (!JWT_SECRET) {
+            throw new Error('Fatal: JWT_SECRET missing from environment map.');
         }
 
         const token = jwt.sign(

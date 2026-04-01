@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { get } = require('../db/sqlite');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'supersecretassignmentkey';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // Middleware to parse and verify the JWT
 const authenticateToken = async (req, res, next) => {
@@ -10,6 +10,11 @@ const authenticateToken = async (req, res, next) => {
 
     if (!token) {
         return res.error('Access token is missing or invalid', 401);
+    }
+    
+    if (!JWT_SECRET) {
+        console.error('Fatal Error: JWT_SECRET missing from environment map.');
+        return res.error('Internal Server Config Error', 500);
     }
 
     try {
