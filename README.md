@@ -55,4 +55,4 @@ A fully interactive Swagger OpenAPI specification is running inside the applicat
    - **Password:** `admin123`
 
 ---
-*Created by [Backend Engineer]*
+
