@@ -38,8 +38,8 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "email": { "type": "string", "example": "admin@finance.local" },
-                  "password": { "type": "string", "example": "admin123" }
+                  "email": { "type": "string", "example": "admin@yourdomain.com" },
+                  "password": { "type": "string", "example": "your_secure_password" }
                 }
               }
             }
