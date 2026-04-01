@@ -12,6 +12,9 @@ const userRoutes = require('./routes/userRoutes');
 const recordRoutes = require('./routes/financialRecordRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./docs/swagger.json');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -41,6 +44,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/records', recordRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+
+// Swagger Documentation Route
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Centralized Error Handler (Must be after mapping all routes)
 app.use(errorHandler);
