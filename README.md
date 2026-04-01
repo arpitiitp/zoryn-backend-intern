@@ -38,6 +38,10 @@ SQLite was explicitly selected to minimize environment setup friction for evalua
 | JWT_SECRET      | Secret key for signing tokens      | *(required)*         |
 | ADMIN_EMAIL     | Seed admin email                   | admin@zorvyn.local   |
 | ADMIN_PASSWORD  | Seed admin password                | *(required)*         |
+| ANALYST_EMAIL   | Seed analyst test email            | analyst@zorvyn.local |
+| ANALYST_PASSWORD| Seed analyst test password         | *(required)*         |
+| VIEWER_EMAIL    | Seed viewer test email             | viewer@zorvyn.local  |
+| VIEWER_PASSWORD | Seed viewer test password          | *(required)*         |
 | DB_PATH         | Path to SQLite file                | ./src/db/finance.sqlite |
 
 ## API Endpoints Overview
@@ -120,9 +124,9 @@ node src/db/seed.js
 You can use these automatically generated accounts to quickly test the strict Role-Based Access Controls (RBAC) preventing unauthorized endpoint mutations:
 | Role | Email | Password |
 |---|---|---|
-| **Admin** | *(Matches your `.env` ADMIN_EMAIL)* | *(Matches your `.env` ADMIN_PASSWORD)* |
-| **Analyst** | `analyst@zorvyn.local` | `analyst123` |
-| **Viewer** | `viewer@zorvyn.local` | `viewer123` |
+| **Admin** | *(Matches `.env` ADMIN_EMAIL)* | *(Matches `.env` ADMIN_PASSWORD)* |
+| **Analyst** | *(Matches `.env` ANALYST_EMAIL)* | *(Matches `.env` ANALYST_PASSWORD)* |
+| **Viewer** | *(Matches `.env` VIEWER_EMAIL)* | *(Matches `.env` VIEWER_PASSWORD)* |
 
 **4. Start Server**
 ```bash

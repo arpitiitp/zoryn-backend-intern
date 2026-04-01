@@ -6,16 +6,22 @@ require('dotenv').config();
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
+const ANALYST_EMAIL = process.env.ANALYST_EMAIL;
+const ANALYST_PASSWORD = process.env.ANALYST_PASSWORD;
+
+const VIEWER_EMAIL = process.env.VIEWER_EMAIL;
+const VIEWER_PASSWORD = process.env.VIEWER_PASSWORD;
+
 async function seedAdmin() {
-    if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
-        console.error('Fatal Error: ADMIN_EMAIL or ADMIN_PASSWORD missing from .env variables.');
+    if (!ADMIN_EMAIL || !ADMIN_PASSWORD || !ANALYST_EMAIL || !VIEWER_EMAIL) {
+        console.error('Fatal Error: Required seed environmental variables missing (ADMIN, ANALYST, VIEWER).');
         process.exit(1);
     }
     
     const usersToSeed = [
         { email: ADMIN_EMAIL, password: ADMIN_PASSWORD, role: 'ADMIN' },
-        { email: 'analyst@zorvyn.local', password: 'analyst123', role: 'ANALYST' },
-        { email: 'viewer@zorvyn.local', password: 'viewer123', role: 'VIEWER' }
+        { email: ANALYST_EMAIL, password: ANALYST_PASSWORD, role: 'ANALYST' },
+        { email: VIEWER_EMAIL, password: VIEWER_PASSWORD, role: 'VIEWER' }
     ];
 
     try {
