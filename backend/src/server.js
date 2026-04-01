@@ -7,6 +7,9 @@ const rateLimit = require('express-rate-limit');
 const responseFormatter = require('./middlewares/responseFormatter');
 const errorHandler = require('./middlewares/errorHandler');
 
+const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -20,16 +23,20 @@ app.use(responseFormatter);
 
 // Basic Global Rate Limiting
 const globalLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, 
-    max: 100, 
-    message: { success: false, message: 'Too many requests from this IP, please try again later.' }
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: { success: false, message: 'Too many requests from this IP, please try again later.' }
 });
 app.use('/api', globalLimiter);
 
-// Healthcheck Route
+// check Healthcheck Route
 app.get('/health', (req, res) => {
   return res.success(null, 'Finance Backend API is online.');
 });
+
+// Application Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 
 // Centralized Error Handler (Must be after mapping all routes)
 app.use(errorHandler);
