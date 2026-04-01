@@ -42,8 +42,8 @@ class UserService {
         };
     }
 
-    async getAllUsers() {
-        return await userRepository.findAll();
+    async getAllUsers(filters) {
+        return await userRepository.findAll(filters);
     }
 
     async createUser(userData) {

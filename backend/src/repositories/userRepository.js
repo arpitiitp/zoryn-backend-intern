@@ -10,8 +10,23 @@ class UserRepository {
         return await get('SELECT * FROM users WHERE id = ?', [id]);
     }
 
-    async findAll() {
-        return await all('SELECT id, email, role, isActive, createdAt, updatedAt FROM users');
+    async findAll({ role, isActive } = {}) {
+        let query = `SELECT id, email, role, isActive, createdAt, updatedAt FROM users WHERE 1=1`;
+        const params = [];
+
+        if (role) {
+            query += ` AND role = ?`;
+            params.push(role);
+        }
+        if (isActive !== undefined) {
+            // Convert to integer for SQLite boolean representation
+            const activeInt = (isActive === 'true' || isActive === true) ? 1 : 0;
+            query += ` AND isActive = ?`;
+            params.push(activeInt);
+        }
+
+        query += ` ORDER BY createdAt DESC`;
+        return await all(query, params);
     }
 
     async create(userData) {

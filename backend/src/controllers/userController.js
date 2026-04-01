@@ -3,7 +3,8 @@ const userService = require('../services/userService');
 class UserController {
     async getAllUsers(req, res, next) {
         try {
-            const users = await userService.getAllUsers();
+            const { role, isActive } = req.query;
+            const users = await userService.getAllUsers({ role, isActive });
             return res.success(users, 'Users retrieved successfully');
         } catch (error) {
             next(error);

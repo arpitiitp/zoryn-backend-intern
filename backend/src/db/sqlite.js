@@ -8,6 +8,10 @@ const db = new sqlite3.Database(DB_PATH, (err) => {
         console.error('Error connecting to the database:', err.message);
     } else {
         console.log('Connected to the SQLite database at', DB_PATH);
+        // Force foreign key enforcement across sqlite instances
+        db.run('PRAGMA foreign_keys = ON;', (pragmaErr) => {
+            if (pragmaErr) console.error('Error enabling PRAGMA foreign keys:', pragmaErr);
+        });
     }
 });
 

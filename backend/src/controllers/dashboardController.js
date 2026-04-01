@@ -12,7 +12,8 @@ class DashboardController {
 
     async getTrends(req, res, next) {
         try {
-            const trends = await dashboardService.getTrends();
+            const { period } = req.query;
+            const trends = await dashboardService.getTrends(period);
             return res.success(trends, 'Dashboard trends retrieved successfully');
         } catch (error) {
             next(error);

@@ -11,31 +11,39 @@ async function seedAdmin() {
         console.error('Fatal Error: ADMIN_EMAIL or ADMIN_PASSWORD missing from .env variables.');
         process.exit(1);
     }
+    
+    const usersToSeed = [
+        { email: ADMIN_EMAIL, password: ADMIN_PASSWORD, role: 'ADMIN' },
+        { email: 'analyst@zorvyn.local', password: 'analyst123', role: 'ANALYST' },
+        { email: 'viewer@zorvyn.local', password: 'viewer123', role: 'VIEWER' }
+    ];
+
     try {
-        console.log('Checking for existing admin user...');
-        const existingAdmin = await get(`SELECT id FROM users WHERE email = ?`, [ADMIN_EMAIL]);
-        
-        if (existingAdmin) {
-            console.log('Admin user already exists. Skipping seed.');
-            return;
-        }
-
-        console.log('Creating initial admin user...');
-        const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
         const now = new Date().toISOString();
-        const id = uuidv4();
 
-        await run(
-            `INSERT INTO users (id, email, passwordHash, role, isActive, createdAt, updatedAt) 
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [id, ADMIN_EMAIL, passwordHash, 'ADMIN', 1, now, now]
-        );
+        for (const user of usersToSeed) {
+            console.log(`Checking for existing ${user.role} user (${user.email})...`);
+            const existingUser = await get(`SELECT id FROM users WHERE email = ?`, [user.email]);
+            
+            if (existingUser) {
+                console.log(`- ${user.role} user already exists. Skipping.`);
+                continue;
+            }
 
-        console.log('Successfully created initial admin user!');
-        console.log(`Email: ${ADMIN_EMAIL}`);
-        console.log(`Password: ${ADMIN_PASSWORD} (loaded from environment)`);
+            console.log(`- Creating ${user.role} user...`);
+            const passwordHash = await bcrypt.hash(user.password, 10);
+            const id = uuidv4();
+
+            await run(
+                `INSERT INTO users (id, email, passwordHash, role, isActive, createdAt, updatedAt) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                [id, user.email, passwordHash, user.role, 1, now, now]
+            );
+
+            console.log(`Successfully created ${user.role}: ${user.email} / ${user.password}`);
+        }
     } catch (err) {
-        console.error('Error seeding admin user:', err);
+        console.error('Error seeding users:', err);
     } finally {
         db.close();
     }

@@ -34,22 +34,38 @@ class DashboardService {
         };
     }
 
-    async getTrends() {
-        // Monthly trends aggregation (assumes ISO dates YYYY-MM-DD...)
-        const trendsQuery = `
-            SELECT 
-                SUBSTR(date, 1, 7) as month,
-                SUM(CASE WHEN type = 'INCOME' THEN amount ELSE 0 END) as income,
-                SUM(CASE WHEN type = 'EXPENSE' THEN amount ELSE 0 END) as expense
-            FROM financial_records
-            WHERE deletedAt IS NULL
-            GROUP BY month
-            ORDER BY month ASC
-        `;
-        const monthlyTrends = await all(trendsQuery);
+    async getTrends(period = 'monthly') {
+        let trendsQuery;
+
+        if (period === 'weekly') {
+            trendsQuery = `
+                SELECT 
+                    strftime('%Y-%W', date) as periodKey,
+                    SUM(CASE WHEN type = 'INCOME' THEN amount ELSE 0 END) as income,
+                    SUM(CASE WHEN type = 'EXPENSE' THEN amount ELSE 0 END) as expense
+                FROM financial_records
+                WHERE deletedAt IS NULL
+                GROUP BY periodKey
+                ORDER BY periodKey ASC
+            `;
+        } else {
+            trendsQuery = `
+                SELECT 
+                    SUBSTR(date, 1, 7) as periodKey,
+                    SUM(CASE WHEN type = 'INCOME' THEN amount ELSE 0 END) as income,
+                    SUM(CASE WHEN type = 'EXPENSE' THEN amount ELSE 0 END) as expense
+                FROM financial_records
+                WHERE deletedAt IS NULL
+                GROUP BY periodKey
+                ORDER BY periodKey ASC
+            `;
+        }
+
+        const trendsData = await all(trendsQuery);
 
         return {
-            monthlyTrends
+            period,
+            trends: trendsData
         };
     }
 }
