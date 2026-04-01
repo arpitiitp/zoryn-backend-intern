@@ -27,6 +27,13 @@ const schemas = {
     }),
     updateUserStatus: Joi.object({
         isActive: Joi.boolean().required()
+    }),
+    createRecord: Joi.object({
+        amount: Joi.number().positive().required(),
+        type: Joi.string().valid('INCOME', 'EXPENSE').required(),
+        category: Joi.string().max(100).required(),
+        date: Joi.date().iso().required(),
+        notes: Joi.string().max(500).optional().allow('', null)
     })
 };
 
