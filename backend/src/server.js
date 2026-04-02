@@ -44,6 +44,11 @@ app.get('/health', (req, res) => {
   return res.success(null, 'Finance API is up and running');
 });
 
+// Automatically redirect any bare URL visits directly to the docs
+app.get('/', (req, res) => {
+    res.redirect('/api-docs');
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/records', recordRoutes);
