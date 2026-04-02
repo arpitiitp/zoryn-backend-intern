@@ -137,19 +137,34 @@ npm start
 
 A fully configured Swagger UI portal is bundled to facilitate API testing without requiring Postman clients.
 
-1.### Using Swagger UI
-Alternatively, visit [`http://localhost:3000/api-docs`](http://localhost:3000/api-docs) in your browser. All required bearer tokens (derived from the initial seed) are documented heavily within the interactive models.
+### Interactive API Documentation (Swagger)
+
+To thoroughly test and explore the API without needing Postman, a fully interactive Swagger interface is bundled. It natively supports JWT authorization.
+
+1. Start the server (`npm start`)
+2. Navigate to **[http://localhost:3000/api-docs](http://localhost:3000/api-docs)** 
+3. Execute `POST /api/auth/login` using the pre-seeded Admin or Viewer credentials outlined above.
+4. Copy the returned `token` string.
+5. Click the **Authorize** lock icon located at the top of the Swagger page and paste your token. All subsequent requests will now route with verified JWT contexts.
 
 ---
 
-### Executing the Test Suite
-The repository features an isolated **Jest & Supertest** integration test suite that programmatically guarantees RBAC segregation logic, Dashboard math aggregates, and data-integrity across multiple permutations using an isolated `:memory:` SQLite environment ensuring production databases remain untouched.
+## Testing Verification
+
+I've included a comprehensive integration test suite utilizing **Jest** and **Supertest** to explicitly verify the core endpoints, JWT mappings, logic hierarchies, and role-based access limits.
 
 ```bash
+# Execute the testing suite
 npm run test
 ```
 
-> **Passing Criteria Guarantee**: You will observe 11+ green assertions across 4 distinct test suites (Auth, Records, Dashboard, Users).
+To prevent the actual development database from getting unexpectedly overwritten or corrupted during tests, the suite is strictly configured to spin up an isolated, in-memory SQLite database (`:memory:`) wiping cache on each tear-down.
+
+Currently, there are **20 individual tests** verifying different permutations split across four core domains:
+- **`auth.test.js`**: Validates the login mechanics, specifically ensuring bad JSON structures and invalid emails correctly fallback mapped errors without crashing the server.
+- **`users.test.js`**: Asserts that only Admins can create or fetch users, and strictly verifies Viewers are bounced back with a `403 Forbidden`. Also traps duplicate email attempts.
+- **`records.test.js`**: Confirms the overarching CRUD capabilities, and evaluates isolated `Joi` validation tests (such as throwing `400` whenever an invoice tries to push a negative `amount`).
+- **`dashboard.test.js`**: Triggers deterministic testing blocks guaranteeing that SQLite's mathematical aggregations line up exactly with mocked numbers.
 
 ---
 
