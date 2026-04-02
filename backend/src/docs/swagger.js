@@ -1,5 +1,5 @@
 const port = process.env.PORT || 3000;
-const isProd = process.env.NODE_ENV === 'production' || process.env.ENV === 'production';
+const isProd = process.env.NODE_ENV === 'Production' || process.env.ENV === 'production';
 
 module.exports = {
   "openapi": "3.0.0",
