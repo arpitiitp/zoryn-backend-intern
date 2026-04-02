@@ -14,6 +14,48 @@ This codebase enforces a strict layered **Controller-Service-Repository** archit
 **Why the Node/express Stack & SQLite?**
 SQLite was explicitly selected to minimize environment setup friction for evaluation. It operates without requiring background daemons or Docker containers while successfully supporting relational schemas. The `sqlite3` driver was extended with a Promise wrapper to support modern `async/await` patterns. `PRAGMA foreign_keys = ON;` is explicitly initialized on boot to guarantee relational integrity. Raw JavaScript is utilized in accordance with prompt requirements.
 
+### Core Database Schemas
+
+To visualize the underlying data structures mapped into SQLite during `.seed()` injections, please refer to the relational definitions below:
+
+```sql
+CREATE TABLE users (
+    id TEXT PRIMARY KEY,
+    email TEXT UNIQUE NOT NULL,
+    passwordHash TEXT NOT NULL,
+    role TEXT NOT NULL CHECK(role IN ('VIEWER', 'ANALYST', 'ADMIN')),
+    isActive INTEGER DEFAULT 1,
+    createdAt TEXT,
+    updatedAt TEXT
+);
+
+CREATE TABLE financial_records (
+    id TEXT PRIMARY KEY,
+    amount REAL NOT NULL,
+    type TEXT NOT NULL CHECK(type IN ('INCOME', 'EXPENSE')),
+    category TEXT NOT NULL,
+    date TEXT NOT NULL,
+    notes TEXT,
+    createdBy TEXT NOT NULL,
+    createdAt TEXT,
+    updatedAt TEXT,
+    deletedAt TEXT,
+    deletedBy TEXT,
+    FOREIGN KEY (createdBy) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE audit_logs (
+    id TEXT PRIMARY KEY,
+    entityType TEXT NOT NULL,
+    entityId TEXT NOT NULL,
+    action TEXT NOT NULL CHECK(action IN ('CREATE', 'UPDATE', 'DELETE')),
+    performedBy TEXT NOT NULL,
+    timestamp TEXT NOT NULL,
+    changes TEXT,
+    FOREIGN KEY (performedBy) REFERENCES users(id) ON DELETE SET NULL
+);
+```
+
 ## Security & Validations
 
 - **Authentication:** `bcryptjs` is utilized to hash passwords with `10 salt rounds`. Sessions are managed via stateless JWT tokens configured with a `24h` expiration. If a token is spoofed, expired, or missing, the middleware immediately rejects the request with a `401 Unauthorized`.
@@ -27,8 +69,7 @@ SQLite was explicitly selected to minimize environment setup friction for evalua
 
 - **RBAC Limitations:** Only Admins can create, update, or delete users and financial records. Analysts and Viewers are strictly bound to read-only operations.
 - **Closed Registration:** Open user registration is intentionally disabled. User management must be handled by existing Admins via the API. The initial Admin is generated via a direct CLI seed script.
-- **Audit Log Concurrency:** Audit logs are written asynchronously using standard Promise chains. They deliberately do not block the main response thread, prioritizing response time over strict atomic transaction confirmation.
-- **Test Coverage:** Automated unit testing frameworks (Jest/Mocha) are omitted from this core submission, though standard component decoupling natively supports future unit mocking.
+- **Audit Log Concurrency:** Audit logs are written asynchronously using standard Promise chains. They deliberately do not block the main response thread, prioritizing response time over strict atomic transaction confirmation. Any failures encountered during the memory offload natively pipe to standard `console.error` reporting.
 
 ## Environment Variables
 

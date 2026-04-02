@@ -8,7 +8,7 @@ class FinancialRecordService {
         // fire and forget the audit log -- we don't await this so it doesn't block the actual API response
         auditLogService.logAction('FinancialRecord', newRecord.id, 'CREATE', userId, {
             newState: newRecord
-        });
+        }).catch(err => console.error('[Audit Defect] Asynchronous CREATE log failed:', err.message));
 
         return newRecord;
     }
@@ -36,7 +36,7 @@ class FinancialRecordService {
         auditLogService.logAction('FinancialRecord', id, 'UPDATE', userId, {
             oldState: existingRecord,
             newState: updatedRecord
-        });
+        }).catch(err => console.error('[Audit Defect] Asynchronous UPDATE log failed:', err.message));
 
         return updatedRecord;
     }
@@ -49,7 +49,7 @@ class FinancialRecordService {
         // store what it looked like right before deletion just to be safe
         auditLogService.logAction('FinancialRecord', id, 'DELETE', userId, {
             deletedState: existingRecord
-        });
+        }).catch(err => console.error('[Audit Defect] Asynchronous DELETE log failed:', err.message));
 
         return true;
     }
