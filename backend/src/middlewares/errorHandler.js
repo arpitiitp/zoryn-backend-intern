@@ -8,9 +8,10 @@ const errorHandler = (err, req, res, next) => {
             return res.error(err.details[0].message || err.message, 400, err.details);
         }
         
-        // Custom controlled errors
-        if (err.statusCode) {
-            return res.error(err.message, err.statusCode);
+        // Custom controlled errors or mapped lib errors like body-parser (err.status)
+        const status = err.statusCode || err.status;
+        if (status) {
+            return res.error(err.message, status);
         }
 
         // Generic fallback error

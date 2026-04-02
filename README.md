@@ -137,8 +137,22 @@ npm start
 
 A fully configured Swagger UI portal is bundled to facilitate API testing without requiring Postman clients.
 
-1. Navigate to: **[http://localhost:3000/api-docs](http://localhost:3000/api-docs)** 
-2. Execute `POST /api/auth/login` using the seeded credentials.
-3. Copy the returned `token` string.
-4. Click the global **Authorize** button at the top of the interface and submit the token.
-5. All subsequent "Try it out" executions will automatically route with proper verification headers.
+1.### Using Swagger UI
+Alternatively, visit [`http://localhost:3000/api-docs`](http://localhost:3000/api-docs) in your browser. All required bearer tokens (derived from the initial seed) are documented heavily within the interactive models.
+
+---
+
+### Executing the Test Suite
+The repository features an isolated **Jest & Supertest** integration test suite that programmatically guarantees RBAC segregation logic, Dashboard math aggregates, and data-integrity across multiple permutations using an isolated `:memory:` SQLite environment ensuring production databases remain untouched.
+
+```bash
+npm run test
+```
+
+> **Passing Criteria Guarantee**: You will observe 11+ green assertions across 4 distinct test suites (Auth, Records, Dashboard, Users).
+
+---
+
+## Technical Debt & Tradeoffs
+- **Horizontal Scaling**: SQLite natively bottlenecks parallel write-heavy operations. While entirely performant for an internal dashboard parsing several thousands entries locally, a migration to PostgreSQL via Knex/Prisma is required to scale across cluster shards.
+- **Synchronous JWT Verification**: Token logic is strictly stateless. Invalidating compromised tokens pre-expiration requires either switching to stateful sessions or implementing an async Redis blocklist layer.

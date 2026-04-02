@@ -1,6 +1,6 @@
 const { run, db } = require('./sqlite');
 
-async function initializeDatabase() {
+async function initializeDatabase(closeDb = true) {
     console.log('Initializing database tables...');
 
     try {
@@ -50,8 +50,12 @@ async function initializeDatabase() {
     } catch (err) {
         console.error('Error creating database tables:', err);
     } finally {
-        db.close();
+        if (closeDb) db.close();
     }
 }
 
-initializeDatabase();
+if (require.main === module) {
+    initializeDatabase();
+}
+
+module.exports = { initializeDatabase };

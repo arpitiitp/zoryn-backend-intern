@@ -1,21 +1,23 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'finance.sqlite');
+const isTestEnv = process.env.NODE_ENV === 'test';
+const defaultDb = isTestEnv ? ':memory:' : path.join(__dirname, 'finance.sqlite');
+const DB_PATH = process.env.DB_PATH || defaultDb;
 
 const db = new sqlite3.Database(DB_PATH, (err) => {
     if (err) {
-        console.error('Error connecting to the database:', err.message);
+        if (!isTestEnv) console.error('Error connecting to the database:', err.message);
     } else {
-        console.log('Connected to the SQLite database at', DB_PATH);
+        if (!isTestEnv) console.log('Connected to the SQLite database at', DB_PATH);
         // Force foreign key enforcement across sqlite instances
         db.run('PRAGMA foreign_keys = ON;', (pragmaErr) => {
-            if (pragmaErr) console.error('Error enabling PRAGMA foreign keys:', pragmaErr);
+            if (pragmaErr && !isTestEnv) console.error('Error enabling PRAGMA foreign keys:', pragmaErr);
         });
     }
 });
 
-// Helper wrapper for async queries
+// wrapper for async queries
 const run = (sql, params = []) => {
     return new Promise((resolve, reject) => {
         db.run(sql, params, function (err) {

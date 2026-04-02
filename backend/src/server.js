@@ -17,13 +17,14 @@ const swaggerDoc = require('./docs/swagger.json');
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Bind custom response formatter BEFORE body parser
+// so malformed JSON returns 400 instead of 500
+app.use(responseFormatter);
+
 // Security and parser setups
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
-
-// Bind custom response formatter early
-app.use(responseFormatter);
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 mins
@@ -53,6 +54,10 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 // Catch-all error handler [must be at last]
 app.use(errorHandler);
 
-app.listen(port, () => {
-  console.log(`[Server] Live on port ${port}`);
-});
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(`[Server] Live on port ${port}`);
+  });
+}
+
+module.exports = app;
