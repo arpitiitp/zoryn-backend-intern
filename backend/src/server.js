@@ -12,7 +12,7 @@ const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const recordRoutes = require('./routes/financialRecordRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
-const swaggerDoc = require('./docs/swagger.json');
+const swaggerDoc = require('./docs/swagger.js');
 
 const app = express();
 const port = process.env.PORT || 3000;

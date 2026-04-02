@@ -1,4 +1,7 @@
-{
+const port = process.env.PORT || 3000;
+const isProd = process.env.NODE_ENV === 'production' || process.env.ENV === 'production';
+
+module.exports = {
   "openapi": "3.0.0",
   "info": {
     "title": "Finance Data Processing API",
@@ -7,8 +10,8 @@
   },
   "servers": [
     {
-      "url": "https://zoryn-backend-intern.onrender.com",
-      "description": "Production Server"
+      "url": isProd ? "https://zoryn-backend-intern.onrender.com" : `http://localhost:${port}`,
+      "description": isProd ? "Production Environment" : "Local Development"
     }
   ],
   "components": {
@@ -163,4 +166,4 @@
       }
     }
   }
-}
+};
