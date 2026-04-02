@@ -1,0 +1,6 @@
+node_modules/
+.env
+src/db/finance.sqlite
+*.sqlite
+coverage/
+.DS_Store
