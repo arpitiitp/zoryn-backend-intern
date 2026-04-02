@@ -7,8 +7,8 @@
   },
   "servers": [
     {
-      "url": "http://localhost:3000",
-      "description": "Local Development Server"
+      "url": "https://zoryn-backend-intern.onrender.com",
+      "description": "Production Server"
     }
   ],
   "components": {
@@ -29,7 +29,9 @@
     "/api/auth/login": {
       "post": {
         "summary": "Login to receive JWT token",
-        "tags": ["Authentication"],
+        "tags": [
+          "Authentication"
+        ],
         "security": [],
         "requestBody": {
           "required": true,
@@ -38,33 +40,75 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "email": { "type": "string", "example": "admin@yourdomain.com" },
-                  "password": { "type": "string", "example": "your_secure_password" }
+                  "email": {
+                    "type": "string",
+                    "example": "admin@yourdomain.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "your_secure_password"
+                  }
                 }
               }
             }
           }
         },
         "responses": {
-          "200": { "description": "Token generated successfully" }
+          "200": {
+            "description": "Token generated successfully"
+          }
         }
       }
     },
     "/api/records": {
       "get": {
         "summary": "List financial records with pagination and filtering",
-        "tags": ["Records"],
-        "parameters": [
-          { "in": "query", "name": "page", "schema": { "type": "integer", "default": 1 } },
-          { "in": "query", "name": "limit", "schema": { "type": "integer", "default": 10 } },
-          { "in": "query", "name": "type", "schema": { "type": "string" } },
-          { "in": "query", "name": "category", "schema": { "type": "string" } }
+        "tags": [
+          "Records"
         ],
-        "responses": { "200": { "description": "Paginated array of records" } }
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "category",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated array of records"
+          }
+        }
       },
       "post": {
         "summary": "Create a new financial record",
-        "tags": ["Records"],
+        "tags": [
+          "Records"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -72,24 +116,50 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "amount": { "type": "number", "example": 1250.50 },
-                  "type": { "type": "string", "example": "INCOME" },
-                  "category": { "type": "string", "example": "Freelance" },
-                  "date": { "type": "string", "format": "date-time", "example": "2024-05-10T12:00:00Z" },
-                  "notes": { "type": "string", "example": "Project X payment" }
+                  "amount": {
+                    "type": "number",
+                    "example": 1250.50
+                  },
+                  "type": {
+                    "type": "string",
+                    "example": "INCOME"
+                  },
+                  "category": {
+                    "type": "string",
+                    "example": "Freelance"
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2024-05-10T12:00:00Z"
+                  },
+                  "notes": {
+                    "type": "string",
+                    "example": "Project X payment"
+                  }
                 }
               }
             }
           }
         },
-        "responses": { "201": { "description": "Record created" } }
+        "responses": {
+          "201": {
+            "description": "Record created"
+          }
+        }
       }
     },
     "/api/dashboard/summary": {
       "get": {
         "summary": "Get total income, expenses, and net balance",
-        "tags": ["Dashboard"],
-        "responses": { "200": { "description": "Dashboard totals" } }
+        "tags": [
+          "Dashboard"
+        ],
+        "responses": {
+          "200": {
+            "description": "Dashboard totals"
+          }
+        }
       }
     }
   }
