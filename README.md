@@ -8,7 +8,7 @@ This codebase enforces a strict layered **Controller-Service-Repository** archit
 
 - **Routes:** Map HTTP paths and attach authentication/authorization middleware guards.
 - **Controllers:** Extract incoming payload data and format standardized HTTP responses.
-- **Services:** Execute core business logic and orchestrate asynchronous logging operations.
+- **Services:** Execute core business logic and trigger async audit writes.
 - **Repositories:** Abstract database access and execute raw SQL queries.
 
 **Why the Node/express Stack & SQLite?**

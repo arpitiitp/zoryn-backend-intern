@@ -2,7 +2,7 @@ const Joi = require('joi');
 
 const validateRequest = (schema) => {
     return (req, res, next) => {
-        const { error, value } = schema.validate(req.body, { abortEarly: false, stripUnknown: true });
+        // using abortEarly: false so the frontend gets an array of *all* validation errors at once, instead of just the first fail
         if (error) {
             return next(error);
         }

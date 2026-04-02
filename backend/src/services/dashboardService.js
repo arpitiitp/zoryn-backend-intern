@@ -2,7 +2,7 @@ const { get, all } = require('../db/sqlite');
 
 class DashboardService {
     async getSummary() {
-        // High-performance single-pass aggregation for totals
+        // pushing this sum directly to sqlite so we don't crash the node process by loading 100k rows into an array in memory
         const totalsQuery = `
             SELECT 
                 SUM(CASE WHEN type = 'INCOME' THEN amount ELSE 0 END) as totalIncome,
@@ -16,7 +16,7 @@ class DashboardService {
         const expenses = totals.totalExpense || 0;
         const netBalance = income - expenses;
 
-        // Category-wise totals
+        // group by category so the frontend can build pie charts easily
         const categoryQuery = `
             SELECT category, type, SUM(amount) as total
             FROM financial_records

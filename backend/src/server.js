@@ -3,55 +3,56 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const swaggerUi = require('swagger-ui-express');
 
+// Custom middlewares & routes
 const responseFormatter = require('./middlewares/responseFormatter');
 const errorHandler = require('./middlewares/errorHandler');
-
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const recordRoutes = require('./routes/financialRecordRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
-
-const swaggerUi = require('swagger-ui-express');
-const swaggerDocument = require('./docs/swagger.json');
+const swaggerDoc = require('./docs/swagger.json');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const port = process.env.PORT || 3000;
 
-// Core Middlewares
+// Security and parser setups
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
-// Apply standardized response formatting to all routes
+// Bind custom response formatter early
 app.use(responseFormatter);
 
-// Basic Global Rate Limiting
-const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 mins
   max: 100,
-  message: { success: false, message: 'Too many requests from this IP, please try again later.' }
+  message: {
+    success: false,
+    message: 'Too many requests. Slow down a bit and try again.'
+  }
 });
-app.use('/api', globalLimiter);
 
-// check Healthcheck Route
+app.use('/api', apiLimiter);
+
+// --- Routes ---
+
 app.get('/health', (req, res) => {
-  return res.success(null, 'Finance Backend API is online.');
+  // Utilizing the formatter middleware attached above
+  return res.success(null, 'Finance API is up and running');
 });
 
-// Application Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/records', recordRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
-// Swagger Documentation Route
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 
-// Centralized Error Handler (Must be after mapping all routes)
+// Catch-all error handler [must be at last]
 app.use(errorHandler);
 
-// Start Server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+app.listen(port, () => {
+  console.log(`[Server] Live on port ${port}`);
 });

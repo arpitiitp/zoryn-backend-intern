@@ -5,7 +5,7 @@ class FinancialRecordService {
     async createRecord(recordData, userId) {
         const newRecord = await financialRecordRepo.create(recordData, userId);
         
-        // Spawn asynchronous audit log
+        // fire and forget the audit log -- we don't await this so it doesn't block the actual API response
         auditLogService.logAction('FinancialRecord', newRecord.id, 'CREATE', userId, {
             newState: newRecord
         });
@@ -32,7 +32,7 @@ class FinancialRecordService {
         
         const updatedRecord = await financialRecordRepo.update(id, updates);
         
-        // Audit log storing state difference
+        // save the old vs new state diff so admins can rollback or investigate mistakes
         auditLogService.logAction('FinancialRecord', id, 'UPDATE', userId, {
             oldState: existingRecord,
             newState: updatedRecord
@@ -46,7 +46,7 @@ class FinancialRecordService {
         
         await financialRecordRepo.softDelete(id, userId);
         
-        // Audit log specifically capturing pre-deletion state
+        // store what it looked like right before deletion just to be safe
         auditLogService.logAction('FinancialRecord', id, 'DELETE', userId, {
             deletedState: existingRecord
         });

@@ -2,6 +2,7 @@ const { run, all } = require('../db/sqlite');
 const { v4: uuidv4 } = require('uuid');
 
 class AuditLogRepository {
+
     async createLog(entityType, entityId, action, performedBy, changes) {
         const id = uuidv4();
         const timestamp = new Date().toISOString();
