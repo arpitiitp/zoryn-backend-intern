@@ -89,15 +89,52 @@ module.exports = {
           {
             "in": "query",
             "name": "type",
+            "description": "Filter by record type",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "enum": ["INCOME", "EXPENSE"]
             }
           },
           {
             "in": "query",
             "name": "category",
+            "description": "Filter by category",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "Salary",
+                "Freelance",
+                "Bonus",
+                "Investment",
+                "Rent",
+                "Food",
+                "Transport",
+                "Utilities",
+                "Healthcare",
+                "Entertainment",
+                "Education",
+                "Other"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "description": "Filter records from this date (YYYY-MM-DD)",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2024-01-01"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "description": "Filter records up to this date (YYYY-MM-DD)",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2024-12-31"
             }
           }
         ],
@@ -125,16 +162,33 @@ module.exports = {
                   },
                   "type": {
                     "type": "string",
+                    "description": "Must be one of the listed values",
+                    "enum": ["INCOME", "EXPENSE"],
                     "example": "INCOME"
                   },
                   "category": {
                     "type": "string",
+                    "description": "Must be one of the listed values",
+                    "enum": [
+                      "Salary",
+                      "Freelance",
+                      "Bonus",
+                      "Investment",
+                      "Rent",
+                      "Food",
+                      "Transport",
+                      "Utilities",
+                      "Healthcare",
+                      "Entertainment",
+                      "Education",
+                      "Other"
+                    ],
                     "example": "Freelance"
                   },
                   "date": {
                     "type": "string",
-                    "format": "date-time",
-                    "example": "2024-05-10T12:00:00Z"
+                    "format": "date",
+                    "example": "2024-05-10"
                   },
                   "notes": {
                     "type": "string",

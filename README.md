@@ -168,25 +168,130 @@ You can use these automatically generated accounts to quickly test the strict Ro
 | **Admin** | *(Matches `.env` ADMIN_EMAIL)* | *(Matches `.env` ADMIN_PASSWORD)* |
 | **Analyst** | *(Matches `.env` ANALYST_EMAIL)* | *(Matches `.env` ANALYST_PASSWORD)* |
 | **Viewer** | *(Matches `.env` VIEWER_EMAIL)* | *(Matches `.env` VIEWER_PASSWORD)* |
+| **Inactive** | `inactive@zorvyn.local` | `inactive123` |
 
-**4. Start Server**
-```bash
-npm start
+> ⚠️ The **Inactive** account has `isActive: false`. Any login attempt with this account should return `403 Forbidden` — this is an intentional edge case for testing auth middleware.
+
+---
+
+## 🗃️ Pre-Seeded Test Data
+
+After running `node src/db/seed.js`, the database is populated with **57 active financial records**, **2 soft-deleted records**, and **2 audit log entries** designed to exercise every major feature and edge case of the API.
+
+> All dates below are **relative to the day you run the seed**. The table shows the approximate real date range assuming today is early April 2026.
+
+### 👥 Users (4 total)
+
+| Role | Email | Active | Purpose |
+|---|---|---|---|
+| `ADMIN` | `admin@zorvyn.local` | ✅ Yes | Full permissions — create, update, delete |
+| `ANALYST` | `analyst@zorvyn.local` | ✅ Yes | Read-only — cannot mutate records |
+| `VIEWER` | `viewer@zorvyn.local` | ✅ Yes | Read-only — cannot mutate records |
+| `VIEWER` | `inactive@zorvyn.local` | ❌ No | **Edge case** — auth should reject this login |
+
+---
+
+### 💰 Financial Records — Date Spread (57 active)
+
+Records are spread across **13+ months** to ensure all trend and filter queries return meaningful data.
+
+| Approx. Date | # Records | Types Seeded | Categories Covered | Notes |
+|---|---|---|---|---|
+| ~Mar 2025 *(13 months ago)* | 2 | INCOME, EXPENSE | Salary, Rent | Boundary for monthly trends |
+| ~Apr 2025 *(12 months ago)* | 4 | INCOME, EXPENSE | Salary, Freelance, Rent, Food | Start of full 12-month window |
+| ~May 2025 *(11 months ago)* | 4 | INCOME, EXPENSE | Salary, Bonus, Utilities, Transport | — |
+| ~Jun 2025 *(10 months ago)* | 4 | INCOME, EXPENSE | Salary, Investment, Rent, Healthcare | Large investment amount seeded |
+| ~Aug 2025 *(8 months ago)* | 5 | INCOME, EXPENSE | Salary, Freelance, Rent, Entertainment, Education | — |
+| ~Oct 2025 *(6 months ago)* | 4 | INCOME, EXPENSE | Salary, Investment, Rent, Food | Very large amount (500,000) seeded |
+| ~Jan 2026 *(3 months ago)* | 5 | INCOME, EXPENSE | Salary, Freelance, Rent, Transport, Healthcare | — |
+| ~Feb 2026 *(2 months ago)* | 7 | INCOME, EXPENSE | Salary, Freelance, Bonus, Rent, Utilities, Food, Entertainment | **7 records in one month** — tests aggregation |
+| ~Mar 2026 *(last 30 days)* | 12 | INCOME, EXPENSE | All 9 categories | **>10 records** — forces pagination page 2 |
+| ~Apr 1 *(3 days ago)* | 3 | INCOME, EXPENSE | Salary, Freelance, Rent | **Same-day records** — tests tie-breaking |
+| ~Apr 2 *(yesterday)* | 2 | INCOME, EXPENSE | Freelance, Food | Most recent data |
+| *Weekly spread (5 weeks)* | 5 | INCOME, EXPENSE | Other | Each in a different ISO week — tests `?period=weekly` |
+
+---
+
+### 🔢 Boundary & Edge Case Records
+
+| Amount | Type | Category | Purpose |
+|---|---|---|---|
+| `0.01` | INCOME | Other | **Minimum valid amount** — Joi `positive()` boundary |
+| `9,999,999` | INCOME | Investment | **Very large amount** — arithmetic overflow check |
+| `9,999.99` | INCOME | Bonus | **Decimal precision** — floating point accuracy |
+| `500,000` | INCOME | Investment | Large lump sum — affects dashboard totals noticeably |
+| `null` notes | Various | Various | Multiple records without notes — optional field handling |
+
+---
+
+### 🗑️ Soft-Deleted Records (2 — invisible to API)
+
+These records exist in the DB with `deletedAt` already set. They **must NOT appear** in any of the following responses. Use them to verify that soft-delete filtering works:
+
+| Check | Endpoint |
+|---|---|
+| Not in record list | `GET /api/records` |
+| Not returned by ID | `GET /api/records/:id` |
+| Not counted in totals | `GET /api/dashboard/summary` |
+| Not in trends | `GET /api/dashboard/trends` |
+
+---
+
+### 📋 Audit Logs (2 pre-seeded entries)
+
+Two audit log entries are pre-seeded against the first financial record inserted. You can fetch them immediately without needing to perform a manual `PUT` or `DELETE` first:
+
 ```
+GET /api/records/:id/audit-logs
+```
+
+The logs contain a `CREATE` entry and an `UPDATE` entry with a `changes` diff payload, simulating a real edit history.
+
+---
+
+### 🔍 Suggested Filter Test Queries
+
+Use these queries in Swagger or Postman to validate filtering and pagination:
+
+```
+# Filter by type
+GET /api/records?type=INCOME
+GET /api/records?type=EXPENSE
+
+# Filter by category
+GET /api/records?category=Salary
+GET /api/records?category=Investment
+
+# Filter by date range (12-month window)
+GET /api/records?from=2025-04-01&to=2026-04-01
+
+# Filter by date range (last 30 days)
+GET /api/records?from=2026-03-04&to=2026-04-03
+
+# Combine filters
+GET /api/records?type=INCOME&category=Freelance
+
+# Pagination — page 2 (last 30 days has >10 records)
+GET /api/records?page=2&limit=10
+
+# Trends — monthly (covers 13 months of data)
+GET /api/dashboard/trends?period=monthly
+
+# Trends — weekly (covers 5 distinct ISO weeks)
+GET /api/dashboard/trends?period=weekly
+```
+
+---
 
 ## Interactive Swagger Testing
 
-A fully configured Swagger UI portal is bundled to facilitate API testing without requiring Postman clients.
-
-### Interactive API Documentation (Swagger)
-
-To thoroughly test and explore the API without needing Postman, a fully interactive Swagger interface is bundled. It natively supports JWT authorization.
+A fully configured Swagger UI portal is bundled to facilitate API testing without requiring Postman clients. It natively supports JWT authorization.
 
 1. Start the server (`npm start`)
-2. Navigate to **[http://localhost:3000/api-docs](http://localhost:3000/api-docs)** 
+2. Navigate to **[http://localhost:3000/api-docs](http://localhost:3000/api-docs)**
 3. Execute `POST /api/auth/login` using the pre-seeded Admin or Viewer credentials outlined above.
 4. Copy the returned `token` string.
-5. Click the **Authorize** lock icon located at the top of the Swagger page and paste your token. All subsequent requests will now route with verified JWT contexts.
+5. Click the **Authorize** lock icon at the top of the Swagger page and paste your token. All subsequent requests will now route with verified JWT contexts.
 
 ---
 
