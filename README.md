@@ -11,8 +11,8 @@ A robust, defensively-programmed backend API designed for processing and managin
 | Role | Email | Password | Active | Permissions |
 |---|---|---|---|---|
 | `ADMIN` | `admin@zorvyn.local` | `admin123` | ✅ | Full access — CRUD records, manage users, view analytics |
-| `ANALYST` | `analyst@zorvyn.local` | `analyst123` | ✅ | Read-only — view records & dashboard only |
-| `VIEWER` | `viewer@zorvyn.local` | `viewer123` | ✅ | Read-only — view records & dashboard only |
+| `ANALYST` | `analyst@zorvyn.local` | `analyst123` | ✅ | Create records, edit own records, view all records and analytics |
+| `VIEWER` | `viewer@zorvyn.local` | `viewer123` | ✅ | View all records and analytics (read-only) |
 | `VIEWER` | `inactive@zorvyn.local` | `inactive123` | ❌ | **Edge case** — login returns `403 Forbidden` |
 
 ---
@@ -195,8 +195,8 @@ After running `node src/db/seed.js`, the database is populated with **57 active 
 | View single record (`GET /api/records/:id`) | ✅ | ✅ | ✅ |
 | View audit logs (`GET /api/records/:id/audit-logs`) | ✅ | ✅ | ✅ |
 | View dashboard (`GET /api/dashboard/*`) | ✅ | ✅ | ✅ |
-| Create record (`POST /api/records`) | ✅ | ❌ 403 | ❌ 403 |
-| Update record (`PUT /api/records/:id`) | ✅ | ❌ 403 | ❌ 403 |
+| Create record (`POST /api/records`) | ✅ | ✅ | ❌ 403 |
+| Update record (`PUT /api/records/:id`) | ✅ | ✅ (own only) | ❌ 403 |
 | Delete record (`DELETE /api/records/:id`) | ✅ | ❌ 403 | ❌ 403 |
 | List users (`GET /api/users`) | ✅ | ❌ 403 | ❌ 403 |
 | Create user (`POST /api/users`) | ✅ | ❌ 403 | ❌ 403 |

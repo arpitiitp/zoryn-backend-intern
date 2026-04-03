@@ -76,6 +76,31 @@ describe('Financial Records API', () => {
         expect(response.body.data.amount).toBe(2000);
     });
 
+    it('should allow ANALYST to create a record', async () => {
+        const analystToken = jwt.sign({ id: 'analyst-test-id', role: 'ANALYST' }, process.env.JWT_SECRET);
+        const response = await request(app)
+            .post('/api/records')
+            .set('Authorization', `Bearer ${analystToken}`)
+            .send({
+                amount: 300, type: 'INCOME', category: 'Freelance', date: '2023-10-02'
+            });
+        expect(response.status).toBe(201);
+        expect(response.body.data.id).toBeDefined();
+    });
+
+    it('should reject ANALYST from updating a record they did not create', async () => {
+        const analystToken = jwt.sign({ id: 'analyst-test-id', role: 'ANALYST' }, process.env.JWT_SECRET);
+        expect(testRecordId).toBeDefined();
+        const response = await request(app)
+            .put(`/api/records/${testRecordId}`)
+            .set('Authorization', `Bearer ${analystToken}`)
+            .send({
+                amount: 400, type: 'INCOME', category: 'Bonus', date: '2023-10-02'
+            });
+        expect(response.status).toBe(403);
+        expect(response.body.message).toContain('can only edit their own');
+    });
+
     it('should allow ADMIN to soft-delete the record', async () => {
         expect(testRecordId).toBeDefined();
         const response = await request(app)

@@ -30,6 +30,13 @@ async function setupTestDb() {
         `INSERT OR IGNORE INTO users (id, email, passwordHash, role, isActive, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?)`,
         ['viewer-test-id', 'viewer@test.local', viewerHash, 'VIEWER', 1, now, now]
     );
+
+    // Hardcode an analyst test user
+    const analystHash = await bcrypt.hash('analyst123', 1);
+    await run(
+        `INSERT OR IGNORE INTO users (id, email, passwordHash, role, isActive, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        ['analyst-test-id', 'analyst@test.local', analystHash, 'ANALYST', 1, now, now]
+    );
 }
 
 module.exports = { setupTestDb };

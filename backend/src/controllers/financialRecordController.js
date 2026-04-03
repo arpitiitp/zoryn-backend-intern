@@ -31,6 +31,12 @@ class FinancialRecordController {
 
     async update(req, res, next) {
         try {
+            if (req.user.role === 'ANALYST') {
+                const existingRecord = await financialRecordService.getRecordById(req.params.id);
+                if (existingRecord.createdBy !== req.user.id) {
+                    return res.error('Analysts can only edit their own records', 403);
+                }
+            }
             const record = await financialRecordService.updateRecord(req.params.id, req.body, req.user.id);
             return res.success(record, 'Record updated successfully');
         } catch (error) {
