@@ -40,8 +40,8 @@ CREATE TABLE users (
     passwordHash TEXT NOT NULL,
     role TEXT NOT NULL CHECK(role IN ('VIEWER', 'ANALYST', 'ADMIN')),
     isActive INTEGER DEFAULT 1,
-    createdAt TEXT,
-    updatedAt TEXT
+    createdAt TEXT NOT NULL,
+    updatedAt TEXT NOT NULL
 );
 
 CREATE TABLE financial_records (
@@ -52,8 +52,8 @@ CREATE TABLE financial_records (
     date TEXT NOT NULL,
     notes TEXT,
     createdBy TEXT NOT NULL,
-    createdAt TEXT,
-    updatedAt TEXT,
+    createdAt TEXT NOT NULL,
+    updatedAt TEXT NOT NULL,
     deletedAt TEXT,
     deletedBy TEXT,
     FOREIGN KEY (createdBy) REFERENCES users(id) ON DELETE CASCADE
@@ -73,7 +73,7 @@ CREATE TABLE audit_logs (
 
 ## Security & Validations
 
-- **Authentication:** `bcryptjs` is utilized to hash passwords with `10 salt rounds`. Sessions are managed via stateless JWT tokens configured with a `24h` expiration. If a token is spoofed, expired, or missing, the middleware immediately rejects the request with a `401 Unauthorized`.
+- **Authentication:** `bcryptjs` is utilized to hash passwords with `10 salt rounds`. Sessions are managed via stateless JWT tokens configured with an `8h` expiration. If a token is spoofed, expired, or missing, the middleware immediately rejects the request with a `401 Unauthorized`.
 - **Request Validation:** Incoming payloads are strictly validated using `Joi` schemas. It enforces constraints such as validating proper ISO-8601 date formats, positive numerical values for amounts, and enum validation for roles (`ADMIN`, `ANALYST`, `VIEWER`).
 - **Defensive HTTP Configuration:** `helmet` masks common Express HTTP headers (like `X-Powered-By`), and `express-rate-limit` throttles request floods.
 - **Strict Environment Validations:** Server and seeder scripts actively validate the presence of required `.env` variables (such as `JWT_SECRET`). Missing variables intentionally throw a `Fatal Error` and crash the process, avoiding insecure fallbacks.
@@ -82,7 +82,7 @@ CREATE TABLE audit_logs (
 
 ## Assumptions & Tradeoffs
 
-- **RBAC Limitations:** Only Admins can create, update, or delete users and financial records. Analysts and Viewers are strictly bound to read-only operations.
+- **RBAC Limitations:** Admins have full access. Analysts can create records and update their own records but cannot delete or manage users. Viewers are strictly read-only. Closed user management means only Admins can create or modify user accounts.
 - **Closed Registration:** Open user registration is intentionally disabled. User management must be handled by existing Admins via the API. The initial Admin is generated via a direct CLI seed script.
 - **Audit Log Concurrency:** Audit logs are written asynchronously using standard Promise chains. They deliberately do not block the main response thread, prioritizing response time over strict atomic transaction confirmation. Any failures encountered during the memory offload natively pipe to standard `console.error` reporting.
 
@@ -112,8 +112,8 @@ CREATE TABLE audit_logs (
 ###  Financial Records
 - `GET /api/records` - Retrieves records with pagination (`page`, `limit`). Accepts query filters: `?type=INCOME`, `?category=Salary`, `?from=YYYY-MM-DD`, `?to=YYYY-MM-DD`.
 - `GET /api/records/:id` - Fetches single record by UUID.
-- `POST /api/records` - *(Admin Only)* Creates a financial record. 
-- `PUT /api/records/:id` - *(Admin Only)* Updates a record and triggers audit logs.
+- `POST /api/records` - *(Admin, Analyst)* Creates a financial record. 
+- `PUT /api/records/:id` - *(Admin, Analyst — own records only)* Updates a record and triggers audit logs.
 - `DELETE /api/records/:id` - *(Admin Only)* Soft-deletes a record.
 - `GET /api/records/:id/audit-logs` - Retrieves historical modification logs for the specific resource.
 
@@ -320,11 +320,11 @@ npm run test
 
 To prevent the actual development database from getting unexpectedly overwritten or corrupted during tests, the suite is strictly configured to spin up an isolated, in-memory SQLite database (`:memory:`) wiping cache on each tear-down.
 
-Currently, there are **20 individual tests** verifying different permutations split across four core domains:
-- **`auth.test.js`**: Validates the login mechanics, specifically ensuring bad JSON structures and invalid emails correctly fallback mapped errors without crashing the server.
-- **`users.test.js`**: Asserts that only Admins can create or fetch users, and strictly verifies Viewers are bounced back with a `403 Forbidden`. Also traps duplicate email attempts.
-- **`records.test.js`**: Confirms the overarching CRUD capabilities, and evaluates isolated `Joi` validation tests (such as throwing `400` whenever an invoice tries to push a negative `amount`).
-- **`dashboard.test.js`**: Triggers deterministic testing blocks guaranteeing that SQLite's mathematical aggregations line up exactly with mocked numbers.
+Currently, there are **69 individual tests** verifying different permutations split across four core domains:
+- **`auth.test.js`**: Validates login mechanics — correct credentials, wrong password, inactive user rejection, missing fields, invalid email format, malformed JSON, and JWT structure.
+- **`users.test.js`**: Asserts full RBAC enforcement across all user management endpoints — create, list, update role, toggle status, duplicate email prevention, and Joi validation for invalid roles and short passwords.
+- **`records.test.js`**: Covers the full CRUD lifecycle including ownership checks for Analysts, soft-delete invisibility (GET returns 404 post-delete), all Joi validation failures, pagination metadata shape, and date/type/category filtering.
+- **`dashboard.test.js`**: Deterministic arithmetic guarantees — multi-month totals, soft-deleted record exclusion, category breakdown correctness, monthly and weekly trend structure, and empty-state zero handling.
 
 ---
 
