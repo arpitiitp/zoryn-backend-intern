@@ -170,17 +170,17 @@ You can use these automatically generated accounts to quickly test the strict Ro
 | **Viewer** | *(Matches `.env` VIEWER_EMAIL)* | *(Matches `.env` VIEWER_PASSWORD)* |
 | **Inactive** | `inactive@zorvyn.local` | `inactive123` |
 
-> ⚠️ The **Inactive** account has `isActive: false`. Any login attempt with this account should return `403 Forbidden` — this is an intentional edge case for testing auth middleware.
+>  The **Inactive** account has `isActive: false`. Any login attempt with this account should return `403 Forbidden` — this is an intentional edge case for testing auth middleware.
 
 ---
 
-## 🗃️ Pre-Seeded Test Data
+##  Pre-Seeded Test Data
 
 After running `node src/db/seed.js`, the database is populated with **57 active financial records**, **2 soft-deleted records**, and **2 audit log entries** designed to exercise every major feature and edge case of the API.
 
 > All dates below are **relative to the day you run the seed**. The table shows the approximate real date range assuming today is early April 2026.
 
-### 👥 Users (4 total)
+###  Users (4 total)
 
 | Role | Email | Active | Purpose |
 |---|---|---|---|
@@ -191,7 +191,7 @@ After running `node src/db/seed.js`, the database is populated with **57 active 
 
 ---
 
-### 💰 Financial Records — Date Spread (57 active)
+###  Financial Records — Date Spread (57 active)
 
 Records are spread across **13+ months** to ensure all trend and filter queries return meaningful data.
 
@@ -212,7 +212,7 @@ Records are spread across **13+ months** to ensure all trend and filter queries 
 
 ---
 
-### 🔢 Boundary & Edge Case Records
+###  Boundary & Edge Case Records
 
 | Amount | Type | Category | Purpose |
 |---|---|---|---|
@@ -224,7 +224,7 @@ Records are spread across **13+ months** to ensure all trend and filter queries 
 
 ---
 
-### 🗑️ Soft-Deleted Records (2 — invisible to API)
+###  Soft-Deleted Records (2 — invisible to API)
 
 These records exist in the DB with `deletedAt` already set. They **must NOT appear** in any of the following responses. Use them to verify that soft-delete filtering works:
 
@@ -237,7 +237,7 @@ These records exist in the DB with `deletedAt` already set. They **must NOT appe
 
 ---
 
-### 📋 Audit Logs (2 pre-seeded entries)
+###  Audit Logs (2 pre-seeded entries)
 
 Two audit log entries are pre-seeded against the first financial record inserted. You can fetch them immediately without needing to perform a manual `PUT` or `DELETE` first:
 
@@ -249,7 +249,7 @@ The logs contain a `CREATE` entry and an `UPDATE` entry with a `changes` diff pa
 
 ---
 
-### 🔍 Suggested Filter Test Queries
+###  Suggested Filter Test Queries
 
 Use these queries in Swagger or Postman to validate filtering and pagination:
 
