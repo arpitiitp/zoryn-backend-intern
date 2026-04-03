@@ -2,6 +2,8 @@
 
 A robust, defensively-programmed backend API designed for processing and managing financial records. Key features include comprehensive role-based access control, relational database enforcement, automated audit logging, and optimized query-level aggregations.
 
+> **Live Demo:** [https://zoryn-backend-intern.onrender.com/api-docs](https://zoryn-backend-intern.onrender.com/api-docs)
+
 ---
 
 ##  Test Credentials (Quick Reference)
