@@ -2,6 +2,21 @@
 
 A robust, defensively-programmed backend API designed for processing and managing financial records. Key features include comprehensive role-based access control, relational database enforcement, automated audit logging, and optimized query-level aggregations.
 
+---
+
+##  Test Credentials (Quick Reference)
+
+> Start here. Use these to log in via `POST /api/auth/login` and paste the returned `token` into Swagger's **Authorize** lock.
+
+| Role | Email | Password | Active | Permissions |
+|---|---|---|---|---|
+| `ADMIN` | `admin@zorvyn.local` | `admin123` | ✅ | Full access — CRUD records, manage users, view analytics |
+| `ANALYST` | `analyst@zorvyn.local` | `analyst123` | ✅ | Read-only — view records & dashboard only |
+| `VIEWER` | `viewer@zorvyn.local` | `viewer123` | ✅ | Read-only — view records & dashboard only |
+| `VIEWER` | `inactive@zorvyn.local` | `inactive123` | ❌ | **Edge case** — login returns `403 Forbidden` |
+
+---
+
 ## Architectural Decisions
 
 This codebase enforces a strict layered **Controller-Service-Repository** architecture to decouple concerns and improve testability:
@@ -161,37 +176,36 @@ node src/db/init.js
 node src/db/seed.js
 ```
 
-### Pre-Seeded Test Credentials
-You can use these automatically generated accounts to quickly test the strict Role-Based Access Controls (RBAC) preventing unauthorized endpoint mutations:
-| Role | Email | Password |
-|---|---|---|
-| **Admin** | *(Matches `.env` ADMIN_EMAIL)* | *(Matches `.env` ADMIN_PASSWORD)* |
-| **Analyst** | *(Matches `.env` ANALYST_EMAIL)* | *(Matches `.env` ANALYST_PASSWORD)* |
-| **Viewer** | *(Matches `.env` VIEWER_EMAIL)* | *(Matches `.env` VIEWER_PASSWORD)* |
-| **Inactive** | `inactive@zorvyn.local` | `inactive123` |
-
-> ⚠️ The **Inactive** account has `isActive: false`. Any login attempt with this account should return `403 Forbidden` — this is an intentional edge case for testing auth middleware.
-
----
-
-## 🗃️ Pre-Seeded Test Data
+##  Pre-Seeded Test Data
 
 After running `node src/db/seed.js`, the database is populated with **57 active financial records**, **2 soft-deleted records**, and **2 audit log entries** designed to exercise every major feature and edge case of the API.
 
 > All dates below are **relative to the day you run the seed**. The table shows the approximate real date range assuming today is early April 2026.
 
-### 👥 Users (4 total)
+### RBAC Credentials & Permission Matrix
 
-| Role | Email | Active | Purpose |
+> Full login credentials are at the **[top of this README](#-test-credentials-quick-reference)**. The matrix below shows exactly what each role can and cannot do.
+
+#### RBAC Permission Matrix
+
+| Action | ADMIN | ANALYST | VIEWER |
 |---|---|---|---|
-| `ADMIN` | `admin@zorvyn.local` | ✅ Yes | Full permissions — create, update, delete |
-| `ANALYST` | `analyst@zorvyn.local` | ✅ Yes | Read-only — cannot mutate records |
-| `VIEWER` | `viewer@zorvyn.local` | ✅ Yes | Read-only — cannot mutate records |
-| `VIEWER` | `inactive@zorvyn.local` | ❌ No | **Edge case** — auth should reject this login |
+| Login | ✅ | ✅ | ✅ |
+| View all records (`GET /api/records`) | ✅ | ✅ | ✅ |
+| View single record (`GET /api/records/:id`) | ✅ | ✅ | ✅ |
+| View audit logs (`GET /api/records/:id/audit-logs`) | ✅ | ✅ | ✅ |
+| View dashboard (`GET /api/dashboard/*`) | ✅ | ✅ | ✅ |
+| Create record (`POST /api/records`) | ✅ | ❌ 403 | ❌ 403 |
+| Update record (`PUT /api/records/:id`) | ✅ | ❌ 403 | ❌ 403 |
+| Delete record (`DELETE /api/records/:id`) | ✅ | ❌ 403 | ❌ 403 |
+| List users (`GET /api/users`) | ✅ | ❌ 403 | ❌ 403 |
+| Create user (`POST /api/users`) | ✅ | ❌ 403 | ❌ 403 |
+| Update user role (`PUT /api/users/:id`) | ✅ | ❌ 403 | ❌ 403 |
+| Toggle user status (`PATCH /api/users/:id/status`) | ✅ | ❌ 403 | ❌ 403 |
 
 ---
 
-### 💰 Financial Records — Date Spread (57 active)
+###  Financial Records — Date Spread (57 active)
 
 Records are spread across **13+ months** to ensure all trend and filter queries return meaningful data.
 
@@ -212,7 +226,7 @@ Records are spread across **13+ months** to ensure all trend and filter queries 
 
 ---
 
-### 🔢 Boundary & Edge Case Records
+###  Boundary & Edge Case Records
 
 | Amount | Type | Category | Purpose |
 |---|---|---|---|
@@ -224,7 +238,7 @@ Records are spread across **13+ months** to ensure all trend and filter queries 
 
 ---
 
-### 🗑️ Soft-Deleted Records (2 — invisible to API)
+###  Soft-Deleted Records (2 — invisible to API)
 
 These records exist in the DB with `deletedAt` already set. They **must NOT appear** in any of the following responses. Use them to verify that soft-delete filtering works:
 
@@ -237,7 +251,7 @@ These records exist in the DB with `deletedAt` already set. They **must NOT appe
 
 ---
 
-### 📋 Audit Logs (2 pre-seeded entries)
+###  Audit Logs (2 pre-seeded entries)
 
 Two audit log entries are pre-seeded against the first financial record inserted. You can fetch them immediately without needing to perform a manual `PUT` or `DELETE` first:
 
@@ -249,7 +263,7 @@ The logs contain a `CREATE` entry and an `UPDATE` entry with a `changes` diff pa
 
 ---
 
-### 🔍 Suggested Filter Test Queries
+###  Suggested Filter Test Queries
 
 Use these queries in Swagger or Postman to validate filtering and pagination:
 
